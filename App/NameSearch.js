@@ -3,12 +3,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, ImageBackground, StyleSheet, Text, TextInput, TouchableOpacity, View, Image, FlatList } from 'react-native';
 import axios from 'axios';
 import img from "../assets/back.png";
-// import AuthContext from '../utils/AuthContext.js';
-import * as ImagePicker from 'expo-image-picker';
-import * as MediaLibrary from 'expo-media-library';
+import AuthContext from '../utils/AuthContext.js';
 
-export default function Search() {
-  // const { Back_uri } = useContext(AuthContext);
+
+
+export default function NameSearch() {
+
+  const { Back_uri } = useContext(AuthContext);
 
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -20,17 +21,10 @@ export default function Search() {
     const formData = new FormData();
     formData.append('name', name);
 
-    if (image) {
-      formData.append('image', {
-        uri: image.uri,
-        type: image.mimeType,
-        name: image.fileName,
-        originalname : image.fileName
-      });
-    }
+
 
     try {
-      const response = await axios.post(`http://192.168.43.125:1901/api/search`, formData, {
+      const response = await axios.post(`${Back_uri}/search`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -43,30 +37,6 @@ export default function Search() {
     }
   };
 
-  const selectImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      setImage(result.assets[0]);
-    }
-  };
-
-  const captureImage = async () => {
-    let result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      setImage(result.assets[0]);
-    }
-    const asset = await MediaLibrary.createAssetAsync(result.assets[0].uri);
-  };
 
   const renderItem = ({ item }) => (
     <View style={styles.listItem}>
@@ -82,18 +52,6 @@ export default function Search() {
     <SafeAreaView style={styles.container}>
       <ImageBackground style={styles.backImage} source={img}>
         <View style={styles.overlay}></View>
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Image</Text>
-          <View style={styles.imageContainer}>
-            {image && <Image source={{ uri: image.uri }} style={styles.image} />}
-            <TouchableOpacity onPress={selectImage} style={styles.imageButton}>
-              <Text style={styles.buttonText}>Select Image</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={captureImage} style={styles.imageButton}>
-              <Text style={styles.buttonText}>Capture Image</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Name</Text>
           <TextInput
@@ -148,22 +106,6 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     paddingHorizontal: 10,
     backgroundColor: '#fff',
-  },
-  imageContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  imageButton: {
-    backgroundColor: '#008CBA',
-    padding: 10,
-    borderRadius: 15,
-    alignItems: 'center',
-    marginLeft: 10,
-  },
-  image: {
-    width: 100,
-    height: 100,
-    borderRadius: 10,
   },
   button: {
     backgroundColor: '#008CBA',

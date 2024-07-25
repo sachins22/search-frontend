@@ -14,6 +14,8 @@ import Create from './App/Create';
 import  Back_uri  from './utils/Server';
 import Server from './utils/Server';
 import Search from './App/Search';
+import NameSearch from './App/NameSearch';
+
 
 export default function App() {
   return (
@@ -32,6 +34,9 @@ export default function App() {
       />
       <Stack.Screen 
       name='Create' component={Create} options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+      name='NameSearch' component={NameSearch} options={{ headerShown: false }}
       />
       
     </Stack.Navigator>

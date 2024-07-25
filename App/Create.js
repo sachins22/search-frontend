@@ -6,13 +6,13 @@ import img from "../assets/back.png";
 import AuthContext from '../utils/Authcontex.js';
 import * as ImagePicker from 'expo-image-picker';
 import { useNavigation } from '@react-navigation/native';
-
+import * as MediaLibrary from 'expo-media-library';
 
 export default function Create() {
-  const navigation = useNavigation()
+  const navigation = useNavigation();
   const { Back_uri } = useContext(AuthContext);
 
-  const [image, setImage] = useState(null);
+  const [images, setImages] = useState([]);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [age, setAge] = useState('');
@@ -25,28 +25,38 @@ export default function Create() {
     formData.append('age', age);
     formData.append('address', address);
 
-    if (image) {
-      formData.append('image',
-         {
+    images.forEach((image, index) => {
+      formData.append(`images`, {
         uri: image.uri,
-        type: image.type,
-        name: image.filename, 
-      }
-    );
-    }
+        type: image.mimeType,
+        name: image.fileName,
+        originalname : image.fileName
+      });
+    });
 
     try {
-      await axios.post(`http://192.168.1.3:1901/api/create`, formData,
-      //    {
-      //   headers: {
-      //     'Content-Type': 'multipart/form-data',
-      //   },
-      // }
-    );
-      navigation.navigate('Search');
+      await axios.post(`${Back_uri}/create`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      navigation.navigate('NameSearch');
     } catch (error) {
       console.error(error);
     }
+
+
+//      await fetch("http://192.168.1.16:1901/api/create",{
+//     method: "POST",
+//     body: formData,
+//   }
+  
+// )
+  
+// .catch((err)=>{
+//     console.log(err)
+//   })
+
   };
 
   const selectImage = async () => {
@@ -57,8 +67,9 @@ export default function Create() {
     });
 
     if (!result.canceled) {
-      setImage(result.assets[0]);
+      setImages([...images, result.assets[0]]);
     }
+    
   };
 
   const captureImage = async () => {
@@ -69,8 +80,9 @@ export default function Create() {
     });
 
     if (!result.canceled) {
-      setImage(result.assets[0]);
+      setImages([...images, result.assets[0]]);
     }
+    const asset = await MediaLibrary.createAssetAsync(result.assets[0].uri);
   };
 
   return (
@@ -78,9 +90,11 @@ export default function Create() {
       <ImageBackground style={styles.backImage} source={img}>
         <View style={styles.overlay}></View>
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Image</Text>
+          <Text style={styles.label}>Images</Text>
           <View style={styles.imageContainer}>
-            {image && <Image source={{ uri: image.uri }} style={styles.image} />}
+            {images.map((img, index) => (
+              <Image key={index} source={{ uri: img.uri }} style={styles.image} />
+            ))}
             <TouchableOpacity onPress={selectImage} style={styles.imageButton}>
               <Text style={styles.buttonText}>Select Image</Text>
             </TouchableOpacity>
@@ -127,7 +141,10 @@ export default function Create() {
             onChangeText={setAddress}
           />
         </View>
-        <TouchableOpacity onPress={addDetail}>
+        <TouchableOpacity onPress={
+          addDetail
+          // ()=> navigation.navigate('Search')
+          }>
           <View style={styles.button}>
             <Text style={styles.buttonText}>Submit</Text>
           </View>
@@ -169,6 +186,7 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     alignItems: 'center',
   },
   imageButton: {
@@ -182,6 +200,7 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 10,
+    margin: 5,
   },
   button: {
     backgroundColor: '#008CBA',
